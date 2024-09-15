@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
   // Inicializando KVS
   banco = kvs_create();
 
-  printf("Execute algum comando. Exemplos:\n");
+  printf("Comandos:\n");
   printf("- ADD <chave> <valor> --> Adiciona o valor <valor> na chave <chave>\n");
   printf("- GET <chave>         --> Retorna o valor da chave <chave> se existir\n");
   printf("- EXIT                --> Sair do programa\n");
@@ -76,6 +76,8 @@ char* get(lua_State *L, KVSstore *store, const void *key){
     return kvs_get(store, key);
   }else if (starts_with(key, "cpf_")){
     return get_cpf(L, store, key);
+  }else if (starts_with(key, "data_")){
+    return get_data(L, store, key);
   }
 }
 
@@ -137,6 +139,24 @@ char* get_cpf(lua_State *L, KVSstore *store, const void *key){
   }
 
   if (!lua_isstring(L, -1)) error(L, "function 'MarcaraCPF' must return a string\n");
+
+  char* result = lua_tostring(L, -1);
+  lua_pop(L, 1);
+
+  return result;
+}
+
+char* get_data(lua_State *L, KVSstore *store, const void *key){
+  lua_getglobal(L, "MascaraData");
+  char* valor_original = kvs_get(store, key);
+  lua_pushstring(L, valor_original);
+
+  if (lua_pcall(L, 1, 1, 0) != 0){
+    error(L, "error running function `MascaraData' in %s\n", lua_tostring(L, -1));
+    return;
+  }
+
+  if (!lua_isstring(L, -1)) error(L, "function 'MarcaraData' must return a string\n");
 
   char* result = lua_tostring(L, -1);
   lua_pop(L, 1);
