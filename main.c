@@ -1,23 +1,16 @@
 // https://codereview.stackexchange.com/questions/63427/simple-key-value-store-in-c
+#include <lua5.4/lauxlib.h>
+#include <lua5.4/lua.h>
+#include <lua5.4/lualib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <lua5.4/lauxlib.h>
-#include <lua5.4/lua.h>
-#include <lua5.4/lualib.h>
-
-#include "command.h"
-#include "kvs.h"
 #include "main.h"
-
-/* function declaration */
-void add (lua_State* L, KVSstore *store, const char *key, char *value);
-void get (lua_State* L, KVSstore *store, const void *key);
-void error (lua_State *L, const char *fmt, ...);
+#include "command.h"
 
 int main(int argc, char *argv[]) {
-  lua_State* L = luaL_newstate();
+  lua_State *L = luaL_newstate();
   luaL_openlibs(L);
   luaL_dofile(L, "script.lua");
 
@@ -45,11 +38,10 @@ int main(int argc, char *argv[]) {
       printf("Inté!\n");
       break;
     } else if (!strcmp(command.command, "ADD")) {
-      kvs_put(banco, command.key, command.value);
+      add(L, banco, command.key, command.value);
     } else if (!strcmp(command.command, "GET")) {
-      char *value = kvs_get(banco, command.key);
-      printf("%s", value);
-      printf("\n");
+      char *value = get(L, banco, command.key);
+      printf("%s\n", value);
     } else {
       printf("Comando não reconhecido!\n");
     }
@@ -60,11 +52,38 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-void error (lua_State *L, const char *fmt, ...) {
+void error(lua_State *L, const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
   vfprintf(stderr, fmt, argp);
   va_end(argp);
   lua_close(L);
   exit(EXIT_FAILURE);
+}
+
+void add(lua_State *L, KVSstore *store, const char *key, char *value) {
+  lua_getglobal(L, "baskara");
+  lua_pushnumber(L, a);
+  lua_pushnumber(L, b);
+  lua_pushnumber(L, c);
+
+  if (lua_pcall(L, 3, 2, 0) != 0)
+    error(L, "error running function `calculo': %s", lua_tostring(L, -1));
+
+  if (lua_isnil(L, -1))
+    error(L, "There is no square root for these values of a, b and c");
+
+  if (!lua_isnumber(L, -1)) error(L, "function `calculo' must return a number");
+
+  r[0] = lua_tonumber(L, -2);
+  r[1] = lua_tonumber(L, -1);
+
+  lua_pop(L, 1);
+  lua_pop(L, 1);
+
+  kvs_put(store, key, value);
+}
+
+char* get(lua_State *L, KVSstore *store, const void *key){
+  return kvs_get(store, key);
 }

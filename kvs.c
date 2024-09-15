@@ -32,7 +32,7 @@ static KVSpair *kvs_get_pair(KVSstore *store, const void *key) {
   if ((!store) || (!store->pairs)) {
     return NULL;
   }
-  printf("Tamanho do banco => %d\n", store->length);
+  // printf("Tamanho do banco => %d\n", store->length);
 
   KVSpair * result = bsearch(key, store->pairs, store->length, kvs_pair_size, kvs_search_compare);
 
@@ -68,11 +68,11 @@ static void kvs_create_pair(KVSstore *store, const void *key, void *value) {
   kvs_resize_pairs(store);
   pair = &store->pairs[store->length - 1];
 
-  printf("Valor da chave => %s\n", key);
+  // printf("Valor da chave => %s\n", key);
   pair->key = key;
   pair->value = value;
   kvs_sort_pairs(store);
-  kvs_show_elements(store);  
+  // kvs_show_elements(store);  
 }
 
 
@@ -104,7 +104,7 @@ void kvs_destroy(KVSstore *store) {
 }
 
 void kvs_put(KVSstore *store, const char *key, char *value) {
-  printf("Valor da chave é => %s\n", key);
+  // printf("Valor da chave é => %s\n", key);
   KVSpair *pair = kvs_get_pair(store, key);
   if (pair) {
     printf("Valor do par é nulo\n");
@@ -124,6 +124,6 @@ void kvs_put(KVSstore *store, const char *key, char *value) {
 /////// GET
 void *kvs_get(KVSstore *store, const void *key) {
   KVSpair *pair = kvs_get_pair(store, key);
-  printf("Valor encontrado => %s\n", pair->value);
+  // printf("Valor encontrado => %s\n", pair->value);
   return pair ? pair->value : NULL;
 }
