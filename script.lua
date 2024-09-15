@@ -22,7 +22,25 @@ function ValidaCpf(cpf)
 end
 
 function ValidaData(data)
-    
+    if string.len(data) ~= 10 then
+        error("A data informada ou esta incompleta ou possui valores a mais. Favor informar a data no padrao YYYY-MM-DD")
+    end
+
+    if data:sub(5, 5) ~= "-" or data:sub(8, 8) ~= "-" then
+        error("A data informada nao esta no padrao ISO8601. Favor informar a data no padrao YYYY-MM-DD")
+    end
+
+    if
+        not data:match("^%d%d%d%d%-%d%d%-%d%d$")
+        or tonumber(data:sub(6, 7)) > 12
+        or tonumber(data:sub(6, 7)) < 1
+        or tonumber(data:sub(9, 10)) > 31
+        or tonumber(data:sub(9, 10)) < 1
+    then
+        error("A data informada possui valores invalidos. Favor informar a data no padrao YYYY-MM-DD")
+    end
+
+    return true
 end
 
 function VerificaDigito(array_cpf, digito, primeiro)
@@ -56,6 +74,10 @@ end
 
 function MascaraCPF(cpf)
     return cpf:sub(1, 3) .. "." .. cpf:sub(4, 6) .. "." .. cpf:sub(7, 9) .. "-" .. cpf:sub(10, 11)
+end
+
+function MascaraData(data)
+    return data:sub(9,10) .. "/" .. data:sub(6,7) .. "/" .. data:sub(1,4)
 end
 
 function ArrayToString(array)
