@@ -57,33 +57,89 @@ void error(lua_State *L, const char *fmt, ...) {
   va_start(argp, fmt);
   vfprintf(stderr, fmt, argp);
   va_end(argp);
-  lua_close(L);
-  exit(EXIT_FAILURE);
+  // lua_close(L);
+  // exit(EXIT_FAILURE);
 }
 
 void add(lua_State *L, KVSstore *store, const char *key, char *value) {
-  lua_getglobal(L, "baskara");
-  lua_pushnumber(L, a);
-  lua_pushnumber(L, b);
-  lua_pushnumber(L, c);
-
-  if (lua_pcall(L, 3, 2, 0) != 0)
-    error(L, "error running function `calculo': %s", lua_tostring(L, -1));
-
-  if (lua_isnil(L, -1))
-    error(L, "There is no square root for these values of a, b and c");
-
-  if (!lua_isnumber(L, -1)) error(L, "function `calculo' must return a number");
-
-  r[0] = lua_tonumber(L, -2);
-  r[1] = lua_tonumber(L, -1);
-
-  lua_pop(L, 1);
-  lua_pop(L, 1);
-
-  kvs_put(store, key, value);
+  if (!starts_with(key, "cpf_") && !starts_with(key, "data_")){
+    kvs_put(store, key, value);
+  }else if (starts_with(key, "cpf_")){
+    add_cpf(L, store, key, value);
+  } else if(starts_with(key, "data_")){
+    add_data(L, store, key, value);
+  }
 }
 
 char* get(lua_State *L, KVSstore *store, const void *key){
-  return kvs_get(store, key);
+  if (!starts_with(key, "cpf_") && !starts_with(key, "data_")){
+    return kvs_get(store, key);
+  }else if (starts_with(key, "cpf_")){
+    return get_cpf(L, store, key);
+  }
+}
+
+int starts_with(const char *a, const char *b){
+   if(strncmp(a, b, strlen(b)) == 0) return 1;
+   return 0;
+}
+
+void add_cpf(lua_State *L, KVSstore *store, const char *key, char *value){
+  lua_getglobal(L, "ValidaCpf");
+  lua_pushstring(L, value);
+
+  if (lua_pcall(L, 1, 1, 0) != 0){
+    error(L, "error running function `ValidaCpf' in %s\n", lua_tostring(L, -1));
+    return;
+  }
+
+  if (!lua_isboolean(L, -1)) error(L, "function `ValidaCpf' must return a boolean\n");
+
+  int result = lua_toboolean(L, -1);
+  lua_pop(L, 1);
+
+  if (result) {
+    kvs_put(store, key, value);
+  } else {
+    printf("O CPF informado nao e valido\n");
+  }
+}
+
+void add_data(lua_State *L, KVSstore *store, const char *key, char *value){
+  lua_getglobal(L, "ValidaData");
+  lua_pushstring(L, value);
+
+  if (lua_pcall(L, 1, 1, 0) != 0){
+    error(L, "error running function `ValidaData' in %s\n", lua_tostring(L, -1));
+    return;
+  }
+
+  if (!lua_isboolean(L, -1)) error(L, "function `ValidaData' must return a boolean\n");
+
+  int result = lua_toboolean(L, -1);
+  lua_pop(L, 1);
+
+  if (result) {
+    kvs_put(store, key, value);
+  } else {
+    printf("A Data informada nao e valida\n");
+  }
+}
+
+char* get_cpf(lua_State *L, KVSstore *store, const void *key){
+  lua_getglobal(L, "MascaraCPF");
+  char* valor_original = kvs_get(store, key);
+  lua_pushstring(L, valor_original);
+
+  if (lua_pcall(L, 1, 1, 0) != 0){
+    error(L, "error running function `MascaraCPF' in %s\n", lua_tostring(L, -1));
+    return;
+  }
+
+  if (!lua_isstring(L, -1)) error(L, "function 'MarcaraCPF' must return a string\n");
+
+  char* result = lua_tostring(L, -1);
+  lua_pop(L, 1);
+
+  return result;
 }

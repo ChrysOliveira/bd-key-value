@@ -107,7 +107,7 @@ void kvs_put(KVSstore *store, const char *key, char *value) {
   // printf("Valor da chave é => %s\n", key);
   KVSpair *pair = kvs_get_pair(store, key);
   if (pair) {
-    printf("Valor do par é nulo\n");
+    // printf("Valor do par é nulo\n");
     if (value) {
       pair->value = value;
     } else {
