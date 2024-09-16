@@ -109,7 +109,7 @@ void kvs_put(KVSstore *store, const char *key, char *value) {
   if (pair) {
     // printf("Valor do par é nulo\n");
     if (value) {
-      pair->value = value;
+      pair->value = strdup(value);
     } else {
       kvs_remove_pair(store, pair);
     }

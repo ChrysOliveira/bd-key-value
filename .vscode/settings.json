@@ -1,6 +1,0 @@
-{
-  "files.associations": {
-    "*.rb": "ruby",
-    "kvs.h": "c"
-  }
-}
